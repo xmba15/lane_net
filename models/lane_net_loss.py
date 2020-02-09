@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -13,6 +14,14 @@ class LaneNetLoss(nn.Module):
 
         self._delta_v = delta_v
         self._delta_d = delta_d
+
+        if weighted_values and (
+            isinstance(weighted_values, list)
+            or isinstance(weighted_values, np.ndarray)
+        ):
+            weighted_values = torch.tensor(weighted_values)
+            if torch.cuda.is_available():
+                weighted_values = weighted_values.cuda()
 
         self._seg_loss_func = nn.CrossEntropyLoss(weighted_values, size_average)
 

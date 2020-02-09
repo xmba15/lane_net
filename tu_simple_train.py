@@ -20,7 +20,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", type=int, default=2)
-parser.add_argument("--embedding_dim", type=int, default=6)
+parser.add_argument("--embedding_dim", type=int, default=4)
 parser.add_argument("--num_epochs", type=int, default=100)
 parser.add_argument("--lr_rate", type=float, default=5e-4)
 parser.add_argument("--momentum", default=0.9, type=float)
@@ -59,8 +59,9 @@ def main(args):
         img_size=input_size,
     )
 
-    # weighted_values = train_dataset.weighted_class()
-    weighted_values = None
+    # run train_dataset.weighted_class()) to calculate the weighted values for
+    # each class again
+    weighted_values = [1.46884111, 15.9926377]
     criterion = LaneNetLoss(weighted_values=weighted_values)
 
     optimizer = optim.Adam(model.parameters(), lr=5e-4, weight_decay=2e-4)
