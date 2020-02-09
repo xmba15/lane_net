@@ -11,8 +11,7 @@ from albumentations import (
     RandomRain,
     Rotate,
     ShiftScaleRotate,
-    RandomResizedCrop
-
+    RandomResizedCrop,
 )
 from albumentations.pytorch import ToTensor
 import random
@@ -32,7 +31,9 @@ class TuSimpleDataTransform(DataTransformBase):
             RandomShadow(p=0.5),
             RandomRain(rain_type="drizzle", p=0.5),
             ShiftScaleRotate(rotate_limit=10, p=0.5),
-            RandomResizedCrop(height=height, width=width, scale=(0.8, 1), p=0.5),
+            RandomResizedCrop(
+                height=height, width=width, scale=(0.8, 1), p=0.5
+            ),
         ]
 
         self._train_transform_list.append(Resize(height, width))

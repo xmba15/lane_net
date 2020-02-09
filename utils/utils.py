@@ -43,11 +43,21 @@ def embedding_post_process(embedding, bin_seg, band_width=1.5, max_num_lane=4):
     return cluster_result
 
 
-def process_one_image(model, img, colors, alpha=0.3):
+def process_one_image(model, img, colors, img_size=None, alpha=0.3):
     import torch
     import numpy as np
+    import cv2
 
-    processed_img = img / 255.0
+    processed_img = np.copy(img)
+    if img_size:
+        height, width = img_size
+        processed_img = cv2.resize(img, (width, height))
+
+    overlay = np.copy(processed_img)
+    new_height, new_width = processed_img.shape[:2]
+
+    processed_img = processed_img / 255.0
+
     # [np.newaxis,:] equals unsqueeze(0)
     processed_img = torch.tensor(
         processed_img.transpose(2, 0, 1)[np.newaxis, :]
@@ -63,13 +73,12 @@ def process_one_image(model, img, colors, alpha=0.3):
         segmentation_output.data.max(1)[1]
         .cpu()
         .numpy()
-        .reshape(img.shape[0], img.shape[1])
+        .reshape(new_height, new_width)
     )
 
     mask = embedding_post_process(embedding_output, mask)
 
     color_mask = np.array(colors)[mask]
-    overlay = np.copy(img)
     overlay[mask != 0] = (
         (1 - alpha) * overlay[mask != 0] + alpha * color_mask[mask != 0]
     ).astype("uint8")

@@ -4,6 +4,7 @@ import os
 import numpy as np
 import cv2
 import json
+import tqdm
 import torch.utils.data as data
 
 
@@ -11,7 +12,7 @@ class TuSimpleDataset(data.Dataset):
     def __init__(
         self,
         data_path,
-        classes=["lane"],
+        classes=["bg", "lane"],
         phase="train",
         transform=None,
         max_instances=100,
@@ -154,6 +155,40 @@ class TuSimpleDataset(data.Dataset):
         overlay = (((1 - alpha) * image) + (alpha * mask)).astype("uint8")
 
         return overlay
+
+    def weighted_class(self):
+        assert self.__len__() > 0
+        print("Estimating weights for each class")
+
+        class_dist_dict = dict((el, 0) for el in self._classes)
+        class_idx_dict = TuSimpleDataset.class_to_class_idx_dict(self._classes)
+
+        for idx in tqdm.tqdm(range(self.__len__())):
+            _, gt = self.__getitem__(idx)
+            gt[gt > 0] = 1
+            for class_name in self._classes:
+                class_dist_dict[class_name] += np.count_nonzero(
+                    gt == class_idx_dict[class_name]
+                )
+
+        total_pixels = np.sum(list(class_dist_dict.values()))
+
+        weighted = np.zeros(len(self._classes), dtype=np.float64)
+        for key, value in class_dist_dict.items():
+            weighted[class_idx_dict[key]] = 1 / np.log(
+                value * 1.0 / total_pixels + 1.02
+            )
+
+        return weighted
+
+    @staticmethod
+    def class_to_class_idx_dict(classes):
+        class_idx_dict = {}
+
+        for i, class_name in enumerate(classes):
+            class_idx_dict[class_name] = i
+
+        return class_idx_dict
 
     @staticmethod
     def generate_color_chart(num_classes, seed=1812):
