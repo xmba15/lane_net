@@ -44,7 +44,9 @@ def main(args):
     if torch.cuda.is_available():
         model = model.cuda()
 
-    overlay = process_one_image(model, img, colors, img_size=input_size, alpha=args.overlay_ratio)
+    overlay = process_one_image(
+        model, img, colors, img_size=input_size, alpha=args.overlay_ratio
+    )
     cv2.imwrite("overlay.png", overlay)
 
 

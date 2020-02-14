@@ -69,7 +69,7 @@ def main(args):
         overlay = process_one_image(
             model, img, colors, img_size=input_size, alpha=args.overlay_ratio
         )
-        cv2.imshow("overlay", overlay)
+        cv2.imshow("overlay", cv2.resize(overlay, (720, 360)))
         # cv2.imwrite("overlay.png", overlay)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
